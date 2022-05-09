@@ -13,6 +13,24 @@ $error_color: #d71e07;
 .input_wrapper {
   display: block;
   position: relative;
+  input{
+    border: unset;
+    &:active,
+    &:focus {
+      outline: unset;
+    }
+    line-height: 20px;
+    font-size: 14px;
+    border-bottom: 1px solid $common_color;
+  }
+}
+
+.input_wrapper.error {
+  input{
+    border-color: $error_color;
+    color: $error_color;
+    animation: shake 800ms ease-in-out;
+  }
 }
 .common_icon {
   content: "";
@@ -31,16 +49,7 @@ $error_color: #d71e07;
   background: url("./assets/image/check-circle.svg") no-repeat 0 0;
   background-size: cover;
 }
-.search_input {
-  border: unset;
-  &:active,
-  &:focus {
-    outline: unset;
-  }
-  line-height: 20px;
-  font-size: 14px;
-  border-bottom: 1px solid $common_color;
-}
+
 
 .info_wrapper {
   display: flex;
@@ -53,11 +62,6 @@ $error_color: #d71e07;
   align-items: center;
 }
 
-.input_error {
-  border-color: $error_color;
-  color: $error_color;
-  animation: shake 800ms ease-in-out;
-}
 
 .head_portrait {
   width: 50px;

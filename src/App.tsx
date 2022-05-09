@@ -1,47 +1,49 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Styles from "./app.module.scss";
 import Loading from "./components/Loading";
 import { getQQDate, type QQResType } from "./serve/QQAPI";
 
 enum InputStatus {
-  Normal,
   Success,
   Faild,
 }
 
 function App() {
-  const [value, setValue] = useState<string>("");
-  const [status, setStatus] = useState<InputStatus>(InputStatus.Normal);
+  const [QQ, setQQ] = useState<string>("");
+  const [status, setStatus] = useState<InputStatus|null>(null);
   const [loading, setLaoding] = useState<Boolean>(false);
-  const [qqData, setQQData] = useState<QQResType | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [apiData, setApiData] = useState<QQResType | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const getQQData = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setStatus(InputStatus.Normal);
-    setValue(value);
+  useEffect(() => {
     setLaoding(true);
-    debGetData(value);
+    debGetData(QQ);
+  }, [QQ]);
+
+  const setQQValue = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setStatus(null);
+    setQQ(value);
   };
 
   const getData = async (qq: string) => {
     setLaoding(true);
     const res = await getQQDate({ qq });
     setLaoding(false);
-    const { status_code, data,message } = res;
+    const { status_code, data, message } = res;
     if (status_code !== 200 || !data) {
       setStatus(InputStatus.Faild);
       setErrorMessage(message);
-      setQQData(null);
+      setApiData(null);
     } else {
-      const {code, msg} = data;
-      if(code === 1){
+      const { code, msg } = data;
+      if (code === 1) {
         setStatus(InputStatus.Success);
-        setQQData(data);
-      }else{
+        setApiData(data);
+      } else {
         setStatus(InputStatus.Faild);
-        setQQData(null);
-        setErrorMessage(msg)
+        setApiData(null);
+        setErrorMessage(msg);
       }
     }
   };
@@ -55,36 +57,38 @@ function App() {
         </header>
         <label
           className={`${Styles.input_wrapper} ${
-            status === InputStatus.Success ? Styles.check : ""
-          } ${status === InputStatus.Faild ? Styles.error : ""}`}
+            status === InputStatus.Success ? Styles.check : Styles.error
+          }`}
         >
           QQ
           <input
-            className={`${Styles.search_input} ${
-              status === InputStatus.Faild ? Styles.input_error : ""
-            }`}
-            value={value}
+            value={QQ}
             onChange={(e) => {
-              getQQData(e);
+              setQQValue(e);
             }}
           />
         </label>
-        {status === InputStatus.Faild&&<div data-testid="error-element" className={Styles.error_message}>{errorMessage}</div>}
+        {status === InputStatus.Faild && (
+          <div data-testid="error-element" className={Styles.error_message}>
+            {errorMessage}
+          </div>
+        )}
         <div className={Styles.info_wrapper}>
-          {loading ? (
-            <Loading size={20}></Loading>
-          ) : qqData ? (
+          {loading && <Loading size={20}></Loading>}
+          {apiData ? (
             <>
               <div className={Styles.head_portrait}>
                 <img
-                  src={qqData.qlogo}
+                  src={apiData.qlogo}
                   className={Styles.logo_img}
                   alt="无法找到logo"
                 />
               </div>
               <ul className={Styles.user_info}>
-                <li data-testid="qq-element" >{qqData.qq}</li>
-                <li className={Styles.user_name} title={qqData.name}>{qqData.name}</li>
+                <li data-testid="qq-element">{apiData.qq}</li>
+                <li className={Styles.user_name} title={apiData.name}>
+                  {apiData.name}
+                </li>
               </ul>
             </>
           ) : (
